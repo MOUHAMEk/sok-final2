@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Stocks</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+        }
+        .actualiser-btn {
+            display: block;
+            width: 150px;
+            padding: 10px;
+            margin: 20px auto;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .actualiser-btn:hover {
+            background-color: #2980b9;
+        }
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        main {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        section {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: #34495e;
+            margin-bottom: 15px;
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        form input,
+        form select,
+        form button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        form button {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #27ae60;
+        }
+
+        #stock-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .stock-item {
+            background-color: #ffffff;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: background-color 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stock-item.red {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .stock-item h3 {
+            font-size: 1.5rem;
+            color: #34495e;
+            margin-bottom: 10px;
+        }
+
+        .stock-item p {
+            margin: 5px 0;
+            font-size: 1rem;
+            color: #666;
+        }
+
+        .stock-item .date {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .stock-item .historique {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .stock-item .historique ul {
+            list-style-type: none;
+        }
+
+        .stock-item .historique li {
+            margin: 5px 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #2c3e50;
+            color: white;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Gestion des Stocks sur Chantier</h1>
+    </header>
+
+    <main>
+        <button class="actualiser-btn" onclick="window.location.reload();">Actualiser</button>
+
+        <section id="ajout-stock">
+            <h2>Ajouter Type de Stock</h2>
+            <form id="stock-form">
+                <label for="materiau">Type de Matériau:</label>
+                <input type="text" id="materiau" name="materiau" required>
+
+                <label for="unite">Unité:</label>
+                <select id="unite" name="unite" required>
+                    <option value="m3">m³</option>
+                    <option value="tonne">tonne</option>
+                    <option value="nombre">nombre</option>
+                    <option value="litres">litres</option>
+                    <option value="voyage">voyage</option>
+                </select>
+
+                <button type="submit">Enregistrer le Type de Stock</button>
+            </form>
+        </section>
+
+        <section id="ajout-stock-initial">
+            <h2>Ajouter Stock Initial</h2>
+            <form id="ajout-stock-initial-form">
+                <label for="materiau-initial">Type de Matériau:</label>
+                <select id="materiau-initial" name="materiau-initial" required>
+                </select>
+
+                <label for="quantite-initiale">Quantité:</label>
+                <input type="number" id="quantite-initiale" name="quantite-initiale" required>
+
+                <label for="date-initiale">Date:</label>
+                <input type="date" id="date-initiale" name="date-initiale" required>
+
+                <label for="fournisseur">Nom du Fournisseur:</label>
+                <input type="text" id="fournisseur" name="fournisseur" required>
+
+                <button type="submit">Enregistrer Stock Initial</button>
+            </form>
+        </section>
+
+        <section id="consommation">
+            <h2>Suivi de la Consommation Journalière</h2>
+            <form id="consommation-form">
+                <label for="materiau-consommation">Type de Matériau:</label>
+                <select id="materiau-consommation" name="materiau-consommation" required>
+                </select>
+
+                <label for="quantite-utilisee">Quantité Utilisée:</label>
+                <input type="number" id="quantite-utilisee" name="quantite-utilisee" required>
+
+                <label for="date-consommation">Date de Consommation:</label>
+                <input type="date" id="date-consommation" name="date-consommation" required>
+                <label for="tache-consommation">Consommé à quelle tâche du chantier:</label>
+                <input type="text" id="tache-consommation" name="tache-consommation" required>
+                <button type="submit">Enregistrer la Consommation</button>
+            </form>
+        </section>
+
+        <section id="arrivage">
+            <h2>Arrivée de Stock</h2>
+            <form id="arrivage-form">
+                <label for="materiau-arrivage">Type de Matériau:</label>
+                <select id="materiau-arrivage" name="materiau-arrivage" required>
+                </select>
+
+                <label for="quantite-arrivage">Quantité Arrivée:</label>
+                <input type="number" id="quantite-arrivage" name="quantite-arrivage" required>
+
+                <label for="date-arrivage">Date d'Arrivée:</label>
+                <input type="date" id="date-arrivage" name="date-arrivage" required>
+
+                <button type="submit">Enregistrer l'Arrivée</button>
+            </form>
+        </section>
+
+        <section id="stocks-restants">
+            <h2>Consultation des Stocks Restants</h2>
+            <div id="stock-dashboard"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2024 Gestion des Stocks - Chantier</p>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js";
+        import { getDatabase, ref, set, update, get } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAuupzFNNcS4uoNifysQuCjEgjIobP7_0k",
+            authDomain: "logiciel-86966.firebaseapp.com",
+            databaseURL: "https://logiciel-86966-default-rtdb.firebaseio.com",
+            projectId: "logiciel-86966",
+            storageBucket: "logiciel-86966.appspot.com",
+            messagingSenderId: "202216572476",
+            appId: "1:202216572476:web:88a0b1c222cbf15e892539",
+            measurementId: "G-37XN9LHCVY"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        const stockForm = document.getElementById('stock-form');
+        const ajoutStockInitialForm = document.getElementById('ajout-stock-initial-form');
+        const consommationForm = document.getElementById('consommation-form');
+        const arrivageForm = document.getElementById('arrivage-form');
+        const stockDashboard = document.getElementById('stock-dashboard');
+        const materiauInitialSelect = document.getElementById('materiau-initial');
+        const materiauConsommationSelect = document.getElementById('materiau-consommation');
+        const materiauArrivageSelect = document.getElementById('materiau-arrivage');
+
+        const refreshMateriauOptions = async () => {
+            const stockRef = ref(database, 'stocks/');
+            const stockSnapshot = await get(stockRef);
+            const stockData = stockSnapshot.val() || {};
+
+            materiauInitialSelect.innerHTML = '';
+            materiauConsommationSelect.innerHTML = '';
+            materiauArrivageSelect.innerHTML = '';
+
+            Object.keys(stockData).forEach((materiau) => {
+                const option = document.createElement('option');
+                option.value = materiau;
+                option.textContent = `${materiau} (${stockData[materiau].unite})`;
+                materiauInitialSelect.appendChild(option);
+                materiauConsommationSelect.appendChild(option.cloneNode(true));
+                materiauArrivageSelect.appendChild(option.cloneNode(true));
+            });
+        };
+
+        const updateStockDisplay = async () => {
+    const stockRef = ref(database, 'stocks/');
+    const stockSnapshot = await get(stockRef);
+    const stockData = stockSnapshot.val() || {};
+
+    stockDashboard.innerHTML = '';
+
+    Object.keys(stockData).forEach((materiau) => {
+        const stockItem = document.createElement('div');
+        stockItem.classList.add('stock-item');
+
+        const seuilAlerte = stockData[materiau].quantiteInitiale * 0.1; // 10% du stock initial
+        if (stockData[materiau].quantiteRestante <= seuilAlerte) {
+            stockItem.classList.add('red');
+        }
+
+        const historiqueEntries = stockData[materiau].historique || [];
+        const historiqueHTML = historiqueEntries.map(entry => {
+            // Inclure la tâche uniquement si le type est "Consommation"
+            const tacheInfo = entry.type === 'Consommation' ? ` (${entry.tache || "N/A"})` : '';
+            return `<li>${entry.date}: ${entry.quantite} ${stockData[materiau].unite} (${entry.type}${tacheInfo})</li>`;
+        }).join('');
+
+        stockItem.innerHTML = `
+            <h3>${materiau}</h3>
+            <p>Stock Initial: ${stockData[materiau].quantiteInitiale} ${stockData[materiau].unite}</p>
+            <p>Quantité Restante: ${stockData[materiau].quantiteRestante} ${stockData[materiau].unite}</p>
+            <p class="date">Dernière mise à jour: ${stockData[materiau].dateDerniereModification}</p>
+            <div class="details">
+                <p>Fournisseur: ${stockData[materiau].fournisseur}</p>
+            </div>
+            <div class="historique">
+                <h4>Historique des Mouvements :</h4>
+                <ul>${historiqueHTML}</ul>
+            </div>
+        `;
+        stockDashboard.appendChild(stockItem);
+    });
+};
+
+        const addHistoriqueEntry = async (materiau, quantite, type, date, tache) => {
+    const stockRef = ref(database, `stocks/${materiau}`);
+    const stockSnapshot = await get(stockRef);
+    const stockData = stockSnapshot.val() || {};
+
+    const historiqueEntries = stockData.historique || [];
+    historiqueEntries.push({
+        quantite,
+        type,
+        date,
+        tache: tache || "N/A"
+    });
+
+    await update(stockRef, {
+        historique: historiqueEntries
+    });
+};
+
+
+        stockForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const materiau = document.getElementById('materiau').value;
+            const unite = document.getElementById('unite').value;
+
+            const stockRef = ref(database, `stocks/${materiau}`);
+            await set(stockRef, {
+                unite,
+                quantiteInitiale: 0,
+                quantiteRestante: 0,
+                dateDerniereModification: new Date().toLocaleDateString('fr-CA'),
+                historique: []
+            });
+
+            document.getElementById('materiau').value = '';
+            document.getElementById('unite').value = 'm3';
+            refreshMateriauOptions();
+        });
+
+        ajoutStockInitialForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const materiau = document.getElementById('materiau-initial').value;
+            const quantiteInitiale = parseFloat(document.getElementById('quantite-initiale').value);
+            const dateInitiale = document.getElementById('date-initiale').value;
+            const fournisseur = document.getElementById('fournisseur').value;
+
+            const stockRef = ref(database, `stocks/${materiau}`);
+            const stockSnapshot = await get(stockRef);
+            const stockData = stockSnapshot.val();
+
+            await update(stockRef, {
+                quantiteInitiale,
+                quantiteRestante: quantiteInitiale,
+                dateDerniereModification: dateInitiale,
+                fournisseur
+            });
+
+            await addHistoriqueEntry(materiau, quantiteInitiale, 'Ajout Initial', dateInitiale);
+
+            document.getElementById('quantite-initiale').value = '';
+            document.getElementById('date-initiale').value = '';
+            document.getElementById('fournisseur').value = '';
+
+            updateStockDisplay();
+        });
+
+        consommationForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const materiau = document.getElementById('materiau-consommation').value;
+    const quantiteUtilisee = parseFloat(document.getElementById('quantite-utilisee').value);
+    const dateConsommation = document.getElementById('date-consommation').value;
+    const tacheConsommation = document.getElementById('tache-consommation').value; // Nouvelle valeur
+
+    const stockRef = ref(database, `stocks/${materiau}`);
+    const stockSnapshot = await get(stockRef);
+    const stockData = stockSnapshot.val();
+
+    const nouvelleQuantiteRestante = stockData.quantiteRestante - quantiteUtilisee;
+
+    await update(stockRef, {
+        quantiteRestante: nouvelleQuantiteRestante,
+        dateDerniereModification: dateConsommation
+    });
+
+    await addHistoriqueEntry(materiau, quantiteUtilisee, 'Consommation', dateConsommation, tacheConsommation); // Passage de la tâche
+
+    document.getElementById('quantite-utilisee').value = '';
+    document.getElementById('date-consommation').value = '';
+    document.getElementById('tache-consommation').value = ''; // Réinitialisation du champ
+
+    updateStockDisplay();
+});
+
+
+        arrivageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const materiau = document.getElementById('materiau-arrivage').value;
+            const quantiteArrivee = parseFloat(document.getElementById('quantite-arrivage').value);
+            const dateArrivage = document.getElementById('date-arrivage').value;
+
+            const stockRef = ref(database, `stocks/${materiau}`);
+            const stockSnapshot = await get(stockRef);
+            const stockData = stockSnapshot.val();
+
+            const nouvelleQuantiteRestante = stockData.quantiteRestante + quantiteArrivee;
+
+            await update(stockRef, {
+                quantiteRestante: nouvelleQuantiteRestante,
+                dateDerniereModification: dateArrivage
+            });
+
+            await addHistoriqueEntry(materiau, quantiteArrivee, 'Arrivage', dateArrivage);
+
+            document.getElementById('quantite-arrivage').value = '';
+            document.getElementById('date-arrivage').value = '';
+
+            updateStockDisplay();
+        });
+
+        refreshMateriauOptions();
+        updateStockDisplay();
+        
+    </script>
+</body>
+
+</html>
