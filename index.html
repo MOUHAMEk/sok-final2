@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Stocks</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -25,6 +27,25 @@
             text-align: center;
             padding: 20px 0;
         }
+        #generatePDFButton {
+    display: block;
+    width: 200px;
+    padding: 10px;
+    margin: 20px auto;
+    background-color: #e67e22; /* Couleur orange */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#generatePDFButton:hover {
+    background-color: #d35400; /* Couleur orange foncé */
+}
+
         .actualiser-btn {
             display: block;
             width: 150px;
@@ -169,6 +190,8 @@
     </header>
 
     <main>
+        <button id="generatePDFButton">Générer le Rapport PDF</button>
+
         <button class="actualiser-btn" onclick="window.location.reload();">Actualiser</button>
 
         <section id="ajout-stock">
@@ -461,7 +484,84 @@
 
         refreshMateriauOptions();
         updateStockDisplay();
-        
+       
+        const generatePDFReport = async () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const stockRef = ref(database, 'stocks/');
+    const stockSnapshot = await get(stockRef);
+    const stockData = stockSnapshot.val() || {};
+
+    let yPosition = 25; // Position verticale initiale (2,5 cm)
+    const lineHeight = 10; // Hauteur de ligne
+    const pageHeight = doc.internal.pageSize.height; // Hauteur de la page
+    const bottomMargin = 20; // Marge en bas de page (2,5 cm)
+
+    doc.setFont("times", "bold");
+    doc.setFontSize(20);
+    doc.text("Rapport des Stocks Restants", doc.internal.pageSize.getWidth() / 2, yPosition, { align: "center" });
+    yPosition += lineHeight * 2;
+
+    doc.setFontSize(12);
+
+    Object.keys(stockData).forEach((materiau) => {
+        const stockItem = stockData[materiau];
+
+        doc.setFont("times", "bold");
+        doc.setFontSize(16);
+        doc.text(`Type de Matériau: ${materiau}`, 10, yPosition);
+        yPosition += lineHeight * 1.5;
+
+        doc.setFont("times", "normal");
+        doc.setFontSize(12);
+
+        const texte = `Stock Initial: ${stockItem.quantiteInitiale} ${stockItem.unite}\nQuantité Restante: ${stockItem.quantiteRestante} ${stockItem.unite}\nFournisseur: ${stockItem.fournisseur}\n`;
+        const lignes = texte.split('\n');
+
+        lignes.forEach(ligne => {
+            doc.text(ligne, 10, yPosition);
+            yPosition += lineHeight;
+
+            if (yPosition > pageHeight - bottomMargin - lineHeight) {
+                doc.addPage();
+                yPosition = 25; // Revenir à 2,5 cm en haut
+            }
+        });
+
+        doc.setFont("times", "bold");
+        doc.text("Historique des Mouvements :", 10, yPosition);
+        yPosition += lineHeight;
+
+        const historiqueEntries = stockItem.historique || [];
+        historiqueEntries.forEach(entry => {
+            const tacheInfo = entry.type === 'Consommation' ? ` (${entry.tache || "N/A"})` : '';
+            const historiqueTexte = `${entry.date}: ${entry.quantite} ${stockItem.unite} (${entry.type}${tacheInfo})`;
+            doc.text(historiqueTexte, 10, yPosition);
+            yPosition += lineHeight;
+
+            if (yPosition > pageHeight - bottomMargin - lineHeight) {
+                doc.addPage();
+                yPosition = 25; // Revenir à 2,5 cm en haut
+            }
+        });
+
+        yPosition += lineHeight; // Espacement entre les matériaux
+        doc.setLineWidth(0.5);
+        doc.line(10, yPosition, 200, yPosition); // Ligne entre les stocks
+        yPosition += lineHeight; // Espacement après la ligne
+    });
+
+    // Récupérer la date actuelle pour le nom du fichier
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; // Format YYYY-MM-DD
+    doc.save(`rapport_stocks_${formattedDate}.pdf`);
+};
+
+document.getElementById('generatePDFButton').addEventListener('click', generatePDFReport);
+updateStockDisplay();
+
+
+
     </script>
 </body>
 
